@@ -1,15 +1,15 @@
 module MainMemory(
     input wire [31:0] Address,
     input wire [7:0] Data,
-    input wire [0:0] isWrite,
+    input wire [0:0] ismemWrite,
 
-    output wire [7:0] outputdata
+    output wire [7:0] outputmem
 );
 
 reg [7:0] Address_last8bits;
 
 always @(*) begin
-    if(isWrite) begin
+    if(ismemWrite) begin
         $display("Write executed");
         Address_last8bits <= 8'd0; // Default
     end
