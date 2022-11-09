@@ -11,7 +11,6 @@ module CacheController(
 reg [7:0] tempout;
 integer Associativity = 4;
 integer Blocks = 32;
-integer log = 2;
 // <--------------------------------Variable Value to be changed-------------------------------------->
 
 integer offset; // 1 block consists of 8 words
@@ -22,7 +21,7 @@ integer tag;
 
 integer r; //rows
 integer c; //columns
-reg [28:0] TagArray [0:7][0:3];
+reg [27:0] TagArray [0:7][0:3];
 integer frequency [0:7][0:3];
 reg [63:0] DataArray [0:7][0:3]; //Data Memory Array
 
@@ -36,55 +35,12 @@ initial begin
         for(integer j=0;j<c;j++) begin
             TagArray[i][j]=0;
             DataArray[i][j]=0;
-            frequency[i][j]=0;
+            frequency[i][j]=j;
         end
     end
-    DataArray[1][1]=1;
-    frequency[1][0]=3;
-    frequency[1][1]=1;
-    frequency[1][2]=0;
-    frequency[1][3]=2;    
-    TagArray[1][1]=29'b01000000000000000000000000001;
 end
 
 // <--------------------------------Variable Value to be changed-------------------------------------->
-
-//Tag Array Testing below:
-// initial begin
-// Tag [0][0] = 8'b00000001;
-// Tag [1][1] = 8'b00001111;
-// Tag [0][1] = 8'b01010101;
-// Tag [3][2] = 8'b00011110;
-
-//     for (integer i=0;i<=r;i++) begin
-//         for (integer j=0;j<c;j++) begin
-//             if(Tag[i][j][0:0] !== 1'b0 && Tag[i][j][0:0] !== 1'b1) begin
-//             Tag[i][j]=8'b00000000;
-//             end
-//             $display("r = %d and c=%d and tag=%b",i,j,Tag[i][j]);
-//         end
-//     end
-// end
-reg [7:0] value;
-
-// initial begin
-//     value[7:0] = 8'b00000001;
-// end
-
-// always @(*) begin
-//     for (integer j=0;j<Associativity;j++) begin
-//         if((TagArray[index][j] == value) && (TagArray[index][j][7:7] == 1'b1)) begin
-//             $display("HIT");
-//             column = j;
-//             $display("Column : ",column);
-//         end
-//         else begin
-//             $display("MISS");
-//             column = 404;
-//             $display("Column : ",column);
-//         end
-//     end
-// end
 
 bool hitbit ;
 integer column;
@@ -104,15 +60,15 @@ initial begin
 end
 always @(posedge clk) begin
     offset = memoryAddress [2:0];
-    index = memoryAddress [4:3]; // <--------value to be changed--------->
-    tag = memoryAddress [31:5];
+    index = memoryAddress [5:3]; // <--------value to be changed--------->
+    tag = memoryAddress [31:6];
     $display(offset);
     $display(index);
     $display(tag);
     hitbit = 0;
     column = 0;
     for (integer i=0;i<c;i++) begin
-        if (TagArray[index][i][26:0]==tag && TagArray[index][i][27]==1) begin
+        if (TagArray[index][i][25:0]==tag && TagArray[index][i][26]==1) begin
             hitbit = 1;
             column = i;
         end
@@ -128,15 +84,15 @@ always @(posedge clk) begin
                 frequency[index][0]=column;
             end
         end
-        // $display("%b",frequency[index][0]);
-        // $display("%b",frequency[index][1]);
-        // $display("%b",frequency[index][2]);
-        // $display("%b",frequency[index][3]);
+        $display("%b",frequency[index][0]);
+        $display("%b",frequency[index][1]);
+        $display("%b",frequency[index][2]);
+        $display("%b",frequency[index][3]);
     end
     else if (hitbit==0) begin
-        if (TagArray[index][frequency[index][c-1]][28]) begin
+        if (TagArray[index][frequency[index][c-1]][27]) begin
             Address = memoryAddress;
-            Address[31:5] = TagArray[index][frequency[index][c-1]][26:0];
+            Address[31:6] = TagArray[index][frequency[index][c-1]][25:0];
             for (integer i=0;i<8;i++) begin
                 for (integer j=0;j<8;j++) Data[j] = DataArray[index][column][8*i+j];
                 Address[2:0]=i;
@@ -157,7 +113,7 @@ always @(posedge clk) begin
         for (integer i=0;i<8;i++) begin
             DataArray[index][column][8*offset+i] = writeValue[i];
         end
-        TagArray[index][column][27]=1; // <----------value to be changed--------->
+        TagArray[index][column][26]=1; // <----------value to be changed--------->
     end 
     maintb.totalno++;
     if (hitbit) maintb.hitno++;
@@ -179,16 +135,21 @@ module maintb();
     initial begin
         $dumpfile("tb.vcd");
         $dumpvars(0,maintb);
-        memoryAddress_tb=40;
-        writeValue_tb=4;
-        isWrite_tb=0;
-        clk=0;
         hitno=0;
         totalno=0;
-        for(integer i=0;i<50;i++) begin
-            #10;
-            clk=~clk;
-        end
+        clk=0;
+        writeValue_tb=9;
+        isWrite_tb=1;
+        memoryAddress_tb= 32'h02001f86;
+        #10;
+        clk=~clk;
+        #10;
+        clk=~clk;
+        memoryAddress_tb= 32'h02001f86;
+        #10;
+        clk=~clk;
+        #10;
+        clk=~clk;
         $display("Hits: %d",hitno);
         $display("Total: %d",totalno);
     end
