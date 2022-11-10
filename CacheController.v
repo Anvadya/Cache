@@ -8,7 +8,7 @@ module CacheController(
     output wire [7:0] outputdata
 );
 
-// <--------------------------------Variable Value to be changed-------------------------------------->
+integer Associativity = 4; // <-----associativity------->
 integer Blocks = 32; 
 integer no_of_rows; 
 integer no_of_columns; 
