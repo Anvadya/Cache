@@ -7,14 +7,14 @@ module CacheController(
     input wire clk,
     output wire [7:0] outputdata
 );
-
-integer Associativity = 2; // <-----associativity------->
-integer Blocks = 32; 
+ 
 integer no_of_rows; 
 integer no_of_columns; 
 
 //Variable parameters
-parameter indexbit = 4; //log base 2 of rows
+integer Associativity = 4; // <-----associativity------->
+integer Blocks = 32;
+parameter indexbit = 3; //log base 2 of rows
 
 bool hitbit;
 integer tag;
