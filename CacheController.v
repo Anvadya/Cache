@@ -8,11 +8,11 @@ module CacheController(
     output wire [7:0] outputdata // review block size
 );
 
-parameter Associativity = 4;
-parameter Blocks = 32;
+parameter Associativity = 1;
+parameter Blocks = 512;
 parameter no_of_rows = Blocks/Associativity; 
 parameter no_of_columns = Associativity;
-parameter log = 3; // log(blocks/associativity) 
+parameter log = 9; // log(blocks/associativity) 
 
 bool hitbit;
 integer tag;
@@ -29,6 +29,8 @@ integer frequency [0:no_of_rows-1][0:no_of_columns-1];
 // Initialisation
 
 initial begin
+    $display(no_of_rows);
+    $display(no_of_columns);
     for(integer i=0;i<no_of_rows;i++) begin
         for(integer j=0;j<no_of_columns;j++) begin
             TagArray[i][j]=0;
@@ -106,8 +108,8 @@ always @(posedge clk) begin
             DataArray[index][column][8*offset+i] = writeValue[i];
         end 
     end 
-    // maintb.totalno++;
-    // if (hitbit) maintb.hitno++;
+    maintb.totalno++;
+    if (hitbit) maintb.hitno++;
 end
 
 assign outputdata = tempout;
