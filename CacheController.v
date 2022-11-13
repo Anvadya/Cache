@@ -9,10 +9,10 @@ module CacheController(
 );
 
 parameter Associativity = 1;
-parameter Blocks = 512;
+parameter Blocks = 32;
 parameter no_of_rows = Blocks/Associativity; 
 parameter no_of_columns = Associativity;
-parameter log = 9; // log(blocks/associativity) 
+parameter log = 5; // log(blocks/associativity) 
 
 bool hitbit;
 integer tag;
@@ -67,10 +67,7 @@ always @(posedge clk) begin
             column = i;
         end
     end
-    if (isWrite==0 && hitbit==1) begin
-        for (integer i=0;i<8;i++) begin
-            tempout [i] = DataArray[index][column][8*offset+i];
-        end
+    if (hitbit==1) begin
         for (integer i=0;i<no_of_columns;i++) begin
             if (frequency[index][i]==column) begin
                 for (integer j=i;j>0;j--) frequency[index][j]=frequency[index][j-1];
@@ -78,7 +75,7 @@ always @(posedge clk) begin
             end
         end
     end
-    else if (hitbit==0) begin
+    else begin
         column = frequency[index][no_of_columns-1];
         if (TagArray[index][column][30-log]) begin
             Address = memoryAddress;
@@ -95,9 +92,6 @@ always @(posedge clk) begin
             Address[2:0]=i;
             for (integer j=0;j<8;j++) DataArray[index][column][8*i+j]=outputmem[j];
         end
-        if (isWrite==0) begin
-            for (integer i=0;i<8;i++) tempout[i]=DataArray[index][column][8*offset+i];
-        end
         TagArray[index][column][28-log:0]=tag;
         TagArray[index][column][29-log]=1;
         for (integer j=no_of_columns-1;j>0;j--) frequency[index][j]=frequency[index][j-1];
@@ -108,6 +102,9 @@ always @(posedge clk) begin
             DataArray[index][column][8*offset+i] = writeValue[i];
         end 
     end 
+    else begin
+        for (integer i=0;i<8;i++) tempout[i]=DataArray[index][column][8*offset+i];
+    end
     maintb.totalno++;
     if (hitbit) maintb.hitno++;
 end

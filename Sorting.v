@@ -20,7 +20,7 @@ module maintb();
         totalno=0;
         clk=0;
         writeValue_tb=9;
-        isWrite_tb=0;
+        isWrite_tb=1;
 
         memoryAddress_tb = 32'h02001f86;
         #10;
