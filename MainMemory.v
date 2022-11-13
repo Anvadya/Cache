@@ -10,11 +10,11 @@ reg [7:0] Address_last8bits;
 
 always @(*) begin
     if(ismemWrite) begin
-        $display("Write executed");
+        // $display("Write executed");
         Address_last8bits <= 8'd0; // Default
     end
     else begin
-        $display("Read executed");
+        // $display("Read executed");
         Address_last8bits <= Address[7:0] ;
     end
 end
